@@ -510,4 +510,6 @@ class DatasetRow():
         return self.data
 
     def __repr__(self):
-        return f"DatasetRow('{self.data[:SAMPLE_TRUNCATION_LENGTH] + '...' if len(self.data) > SAMPLE_TRUNCATION_LENGTH else self.data}')"
+        text = self.data[:SAMPLE_TRUNCATION_LENGTH] + '...' if len(self.data) > SAMPLE_TRUNCATION_LENGTH else self.data
+        text = text.replace('\n', '\\n')
+        return f"DatasetRow('{text}')"
