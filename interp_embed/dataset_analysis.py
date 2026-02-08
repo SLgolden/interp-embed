@@ -111,6 +111,8 @@ class Dataset():
                 # Tokenize the documents
                 tokenized_documents = self.sae.tokenize(selected_documents)
 
+                encoding_object = self.sae.tokenize(selected_documents, as_tokens=False)
+
                 # Update the successful token count
                 self.token_count += sum([activations.shape[0] for activations in batch_activations if activations is not None])
             except Exception as e:
@@ -120,7 +122,7 @@ class Dataset():
             for j, batch_activation in enumerate(batch_activations):
                 doc_index = selected_document_indices[batch_size*i + j]
                 if batch_activation != None:
-                    new_row = DatasetRow(row=data_as_dict[doc_index], tokenized_document=tokenized_documents[j], field=self.field, activations = batch_activation)
+                    new_row = DatasetRow(row=data_as_dict[doc_index], tokenized_document=tokenized_documents[j], field=self.field, activations = batch_activation, encoding_object=encoding_object[j])
                     self.rows[doc_index] = new_row
             if save_path and (i + 1) % save_every_batch == 0:
                 self.save_to_file(save_path)
@@ -454,7 +456,7 @@ class Dataset():
         return iter(self.rows)
 
 class DatasetRow():
-    def __init__(self, row, tokenized_document, activations, truncate_chat_template = False, aggregate_activations = None, field = "text", low_memory = False):
+    def __init__(self, row, tokenized_document, activations, encoding_object, truncate_chat_template = False, aggregate_activations = None, field = "text", low_memory = False):
         """
         Initialize a DatasetRow instance.
 
@@ -483,6 +485,7 @@ class DatasetRow():
         elif not low_memory:
             self.aggregate_activations = aggregate_activations
         self.n_tokens = activations.shape[0]
+        self.encoding_object = encoding_object
 
 
     def row_record(self):
