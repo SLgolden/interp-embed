@@ -108,12 +108,6 @@ class Dataset():
                 # Compute latents for the batch of documents
                 batch_activations = self.sae.encode(selected_documents)
                 
-                # Move to CPU immediately so they don't accumulate on GPU
-                batch_activations = [
-                    a.detach().cpu() if a is not None else None 
-                    for a in batch_activations
-                ]
-
                 # Tokenize the documents
                 tokenized_documents = self.sae.tokenize(selected_documents)
 
