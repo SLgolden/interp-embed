@@ -61,13 +61,11 @@ class LocalSAE(BaseSAE):
     )
 
     hook_name = self.sae.cfg.metadata.hook_name
-    hook_layer = self.sae.cfg.metadata.hook_layer
 
     _, cache = self.model.run_with_cache(
       tokens["input_ids"],
       prepend_bos=True,
       names_filter=hook_name,
-      stop_at_layer=hook_layer + 1,
       return_type=None,
     )
 
