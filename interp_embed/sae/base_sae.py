@@ -4,13 +4,14 @@ from enum import Enum
 from .utils import ensure_loaded, process_device_config
 
 class BaseSAE(ABC):
-  def __init__(self, truncate = True, use_assistant_role: bool = True, device: str = "cpu"):
+  def __init__(self, truncate = True, use_assistant_role: bool = True, model_device: str = "cpu", sae_device: str = "cpu"):
     self.loaded = False
     self.tokenizer = None
     self.truncate = truncate
     self._feature_labels = dict()
     self.use_assistant_role = use_assistant_role
-    self.model_device, self.sae_device = process_device_config(device)
+    self.model_device = process_device_config(model_device)
+    self.sae_device = process_device_config(sae_device)
 
   @classmethod
   def from_metadata(cls, metadata):
