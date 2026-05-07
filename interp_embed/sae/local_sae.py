@@ -56,6 +56,44 @@ class LocalSAE(BaseSAE):
     tokens = self.tokenizer(
       texts,
       padding="longest",   # pad to the longest sequence in the batch
+      truncation=self.truncate,
+      return_tensors="pt"
+    )
+
+    hook_name = self.sae.cfg.metadata.hook_name
+    hook_layer = self.sae.cfg.metadata.hook_layer
+
+    _, cache = self.model.run_with_cache(
+      tokens["input_ids"],
+      prepend_bos=True,
+      names_filter=hook_name,
+      stop_at_layer=hook_layer + 1,
+      return_type=None,
+    )
+
+    # Use the SAE
+    hidden = cache[hook_name].to(self.sae_device)
+    del cache
+
+    feature_acts = self.sae.encode(hidden)
+    del hidden
+
+    feature_acts_np = feature_acts.detach().cpu().numpy()
+    del feature_acts
+    if torch.cuda.is_available():
+      torch.cuda.empty_cache()
+
+    attn_mask = tokens["attention_mask"].numpy().astype(bool)
+    return [csr_matrix(feature_acts_np[i][attn_mask[i]]) for i in range(feature_acts_np.shape[0])]
+  '''
+  def encode(self, texts):
+    assert len(texts) > 0, "There must be more than one text to encode."
+    self.sae.eval()  # prevents error if we're expecting a dead neuron mask for who grads
+
+    self.tokenizer.pad_token = self.tokenizer.eos_token
+    tokens = self.tokenizer(
+      texts,
+      padding="longest",   # pad to the longest sequence in the batch
       truncation=self.truncate, # TODO: if the number of tokens exceeds the context window, you should filter this out to avoid erring the rest of the batch
       return_tensors="pt"
     )
@@ -68,6 +106,7 @@ class LocalSAE(BaseSAE):
     feature_acts_np = feature_acts.detach().cpu().numpy()
     attn_mask = tokens["attention_mask"].numpy().astype(bool)
     return [csr_matrix(feature_acts_np[i][attn_mask[i]]) for i in range(feature_acts_np.shape[0])]
+  '''
 
   @ensure_loaded
   def encode_chat(self, chat_conversations):
