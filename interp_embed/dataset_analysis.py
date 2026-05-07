@@ -77,7 +77,8 @@ class Dataset():
 
         # Compute feature activations on the document list
         if compute_activations:
-            self._compute_latents(save_path, save_every_batch, batch_size=batch_size)
+            with torch.inference_mode():
+                self._compute_latents(save_path, save_every_batch, batch_size=batch_size)
 
     def _compute_latents(self, save_path = None, save_every_batch = 5, batch_size = 8):
 
@@ -107,6 +108,12 @@ class Dataset():
             try:
                 # Compute latents for the batch of documents
                 batch_activations = self.sae.encode(selected_documents)
+                
+                # Move to CPU immediately so they don't accumulate on GPU
+                batch_activations = [
+                    a.detach().cpu() if a is not None else None 
+                    for a in batch_activations
+                ]
 
                 # Tokenize the documents
                 tokenized_documents = self.sae.tokenize(selected_documents)
