@@ -77,8 +77,7 @@ class Dataset():
 
         # Compute feature activations on the document list
         if compute_activations:
-            with torch.inference_mode():
-                self._compute_latents(save_path, save_every_batch, batch_size=batch_size)
+            self._compute_latents(save_path, save_every_batch, batch_size=batch_size)
 
     def _compute_latents(self, save_path = None, save_every_batch = 5, batch_size = 8):
 
