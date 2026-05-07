@@ -104,20 +104,16 @@ class Dataset():
            desc="Computing latents")
         for i in pbar:
             selected_documents = [document_list[ind] for ind in selected_document_indices[batch_size*i: batch_size*(i + 1)]]
-            try:
-                # Compute latents for the batch of documents
-                batch_activations = self.sae.encode(selected_documents)
+            # Compute latents for the batch of documents
+            batch_activations = self.sae.encode(selected_documents)
                 
-                # Tokenize the documents
-                tokenized_documents = self.sae.tokenize(selected_documents)
+            # Tokenize the documents
+            tokenized_documents = self.sae.tokenize(selected_documents)
 
-                encoding_object = self.sae.tokenize(selected_documents, as_tokens=False)
+            encoding_object = self.sae.tokenize(selected_documents, as_tokens=False)
 
-                # Update the successful token count
-                self.token_count += sum([activations.shape[0] for activations in batch_activations if activations is not None])
-            except Exception as e:
-                log_tqdm_message(f"ERROR (batch {i}): {e}")
-                batch_activations, tokenized_documents = [None] * len(selected_documents), None
+            # Update the successful token count
+            self.token_count += sum([activations.shape[0] for activations in batch_activations if activations is not None])
 
             for j, batch_activation in enumerate(batch_activations):
                 doc_index = selected_document_indices[batch_size*i + j]
